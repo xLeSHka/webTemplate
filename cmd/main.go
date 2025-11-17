@@ -22,15 +22,12 @@ import (
 func main() {
 	// TODO: log db requests
 	// TODO: add otel
-	// TODO: add image proxy, DL
-	// TODO: process errors like .Error(), if code is 500 - print stacktrace
 
 	fx.New(
 		fx.Provide(
 			// REST API
 			infra.NewEcho,
 			middlewares.NewLogger,
-			middlewares.NewAuth,
 			handlers.NewAuth,
 
 			// services and infra
