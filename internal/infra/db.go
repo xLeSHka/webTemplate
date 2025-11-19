@@ -1,7 +1,6 @@
 package infra
 
 import (
-	"backend/internal/model"
 	"context"
 	"log"
 	"os"
@@ -12,6 +11,8 @@ import (
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	gormLogger "gorm.io/gorm/logger"
+
+	"backend/internal/model"
 )
 
 func NewPostgresConnection(lc fx.Lifecycle, logger *Logger, cfg *Config) (*gorm.DB, error) {
@@ -55,7 +56,11 @@ func NewPostgresConnection(lc fx.Lifecycle, logger *Logger, cfg *Config) (*gorm.
 			if err != nil {
 				logger.Error()
 			}
-			dbsql.Close()
+
+			err = dbsql.Close()
+			if err != nil {
+				logger.Error()
+			}
 
 			logger.Info("db connection closed")
 

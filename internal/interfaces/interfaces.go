@@ -1,8 +1,9 @@
 package interfaces
 
 import (
-	"backend/internal/model"
 	"context"
+
+	"backend/internal/model"
 )
 
 type UserRepository interface {

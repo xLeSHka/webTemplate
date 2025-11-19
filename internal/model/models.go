@@ -16,9 +16,10 @@ type User struct {
 // по идее надо бы для каждого слоя свой model файл делать и задрачивать конвертеры для каждого
 // но мы заебемся это делать
 
-func (_ *User) TableName() string {
+func (*User) TableName() string {
 	return "users"
 }
+
 func (u *User) BeforeSave(tx *gorm.DB) error {
 	var user User
 	err := tx.Where("LOWER(users.email) = ?", strings.ToLower(u.Email)).First(&user).Error

@@ -1,7 +1,6 @@
 package user
 
 import (
-	"backend/internal/model"
 	"context"
 	"errors"
 
@@ -9,6 +8,8 @@ import (
 	"github.com/oklog/ulid/v2"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+
+	"backend/internal/model"
 )
 
 func (s *ServiceSuite) TestCreateUser() {

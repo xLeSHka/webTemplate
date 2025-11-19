@@ -1,18 +1,19 @@
 package handlers
 
 import (
-	"backend/internal/infra"
-	"backend/internal/interfaces"
-	"backend/internal/service/auth"
-	"backend/internal/service/user"
-	"backend/internal/transport/api/dto"
-	"backend/pkg/utils"
 	"errors"
 	"fmt"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
 	"gorm.io/gorm"
+
+	"backend/internal/infra"
+	"backend/internal/interfaces"
+	"backend/internal/service/auth"
+	"backend/internal/service/user"
+	"backend/internal/transport/api/dto"
+	"backend/pkg/utils"
 )
 
 type Auth struct {

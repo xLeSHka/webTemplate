@@ -1,8 +1,9 @@
 package auth
 
 import (
-	"backend/internal/infra"
 	"time"
+
+	"backend/internal/infra"
 )
 
 type Service struct {

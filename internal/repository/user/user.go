@@ -1,9 +1,10 @@
 package user
 
 import (
-	"backend/internal/model"
 	"context"
 	"strings"
+
+	"backend/internal/model"
 )
 
 func (r *UserRepository) Create(ctx context.Context, user model.User) error {

@@ -1,10 +1,11 @@
 package user
 
 import (
-	interfaceMocks "backend/internal/interfaces/mocks"
 	"testing"
 
 	"github.com/stretchr/testify/suite"
+
+	interfaceMocks "backend/internal/interfaces/mocks"
 )
 
 type ServiceSuite struct {
