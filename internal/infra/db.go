@@ -1,7 +1,7 @@
 package infra
 
 import (
-	"backend/internal/infra/queries"
+	"backend/internal/model"
 	"context"
 	"log"
 	"os"
@@ -44,7 +44,7 @@ func NewPostgresConnection(lc fx.Lifecycle, logger *Logger, cfg *Config) (*gorm.
 
 			// run migrations
 
-			err = db.AutoMigrate(&queries.User{})
+			err = db.AutoMigrate(&model.User{})
 
 			logger.Info("migrations applied")
 

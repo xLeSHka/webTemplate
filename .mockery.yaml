@@ -1,0 +1,9 @@
+dir: "{{ .InterfaceDir }}/mocks"
+filename: "mock_{{ .InterfaceName }}.go"
+
+packages:
+  backend/internal/interfaces:
+    config:
+      include-interface-regex: ".*Repository|.*Service"
+
+

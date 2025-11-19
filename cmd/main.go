@@ -2,8 +2,10 @@ package main
 
 import (
 	"backend/internal/infra"
-	"backend/internal/infra/queries"
-	"backend/internal/service"
+	"backend/internal/interfaces"
+	userRepo "backend/internal/repository/user"
+	"backend/internal/service/auth"
+	"backend/internal/service/user"
 	"backend/internal/transport/api/handlers"
 	"backend/internal/transport/api/middlewares"
 
@@ -33,9 +35,12 @@ func main() {
 			infra.NewLogger,
 			infra.NewConfig,
 			infra.NewPostgresConnection,
-			queries.NewUserRepo,
-			service.NewAuth,
-			service.NewUser,
+			fx.Annotate(
+				userRepo.NewRepository,
+				fx.As(new(interfaces.UserRepository)),
+			),
+			user.NewService,
+			auth.NewService,
 		),
 		/*
 			fx.WithLogger(func(lc fx.Lifecycle, logger *infra.Logger) fxevent.Logger {

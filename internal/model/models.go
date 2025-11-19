@@ -1,4 +1,4 @@
-package queries
+package model
 
 import (
 	"fmt"
@@ -12,6 +12,9 @@ type User struct {
 	Email        string `gorm:"unique;not null"`
 	PasswordHash string `gorm:"not null"`
 }
+
+// по идее надо бы для каждого слоя свой model файл делать и задрачивать конвертеры для каждого
+// но мы заебемся это делать
 
 func (_ *User) TableName() string {
 	return "users"
