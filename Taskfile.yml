@@ -126,24 +126,29 @@ tasks:
         rm -rf {{.COVERAGE_DIR}}
         mkdir -p {{.COVERAGE_DIR}}
         
+        TARGET_PKGS=$(go list ./... \
+          | grep -E '/(internal/(service|repository))' \
+          | grep -vE '/(mocks|testdata|pkg|api|proto|pb|cmd)')
+        
+        if [ -z "$TARGET_PKGS" ]; then
+          echo "⚠️  No targeted packages"
+          exit 1
+        fi
+        
+        TARGET_PKGS_CSV=$(echo "$TARGET_PKGS" | paste -sd "," -)
+        
+        echo "📦 Running tests for packages with test files..."
         ERR=0
-        for mod in {{.MODULES}}; do
-          echo "📦 Working on: $mod"
-        
-          TARGET_PKGS=$(go list ./$mod/... \
-            | grep -E '/(internal/(service|repository))' \
-            | grep -vE '/(mocks|testdata|pkg|api|proto|pb|cmd)' \
-            | paste -sd "," -)
-        
-          if [ -z "$TARGET_PKGS" ]; then
-            echo "⚠️  No targeted packages in $mod"
-            continue
+        IDX=0
+        echo "$TARGET_PKGS" | while read pkg; do
+          if go list -f '{{`{{if .TestGoFiles}}{{.ImportPath}}{{end}}`}}' "$pkg" 2>/dev/null | grep -q .; then
+            IDX=$((IDX + 1))
+            echo " • Testing: $pkg"
+            go test -count=1 -coverpkg="$TARGET_PKGS_CSV" \
+              -coverprofile={{.COVERAGE_DIR}}/pkg_${IDX}.out \
+              -covermode=atomic \
+              "$pkg" || ERR=1
           fi
-        
-          go test -coverpkg="$TARGET_PKGS" \
-            -coverprofile={{.COVERAGE_DIR}}/$mod.out \
-            -covermode=atomic \
-            $(echo "$TARGET_PKGS" | tr "," " ") || ERR=1
         done
         
         if [ $ERR -ne 0 ]; then
@@ -152,22 +157,16 @@ tasks:
         fi
         
         echo
-        echo "📊 Coverage for each module:"
-        for mod in {{.MODULES}}; do
-          OUTFILE="{{.COVERAGE_DIR}}/$mod.out"
-          if [ -f "$OUTFILE" ]; then
-            printf " • %s: " "$mod"
-            go tool cover -func="$OUTFILE" | tail -n1
+        echo "📦 Merging coverage files..."
+        FIRST=1
+        for f in {{.COVERAGE_DIR}}/pkg_*.out; do
+          if [ $FIRST -eq 1 ]; then
+            cat "$f" > {{.COVERAGE_DIR}}/{{.COVERAGE_FILE}}
+            FIRST=0
+          else
+            grep -v "^mode:" "$f" >> {{.COVERAGE_DIR}}/{{.COVERAGE_FILE}}
           fi
         done
-        
-        echo
-        echo "📦 Creating total coverage..."
-        {
-          echo "mode: atomic"
-          find {{.COVERAGE_DIR}} -type f -name '*.out' ! -name '{{.COVERAGE_FILE}}' \
-            -exec grep -h -v "^mode:" {} +
-        } > {{.COVERAGE_DIR}}/{{.COVERAGE_FILE}}
         
         echo
         echo "🧾 Total coverage:"
