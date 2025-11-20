@@ -72,6 +72,8 @@ build.sh
 build.bat
 scripts/
 tools/
+/bin
+/logs
 
 # Certificate and key files
 *.pem
