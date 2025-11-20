@@ -20,6 +20,7 @@ codegen-test-lint:
   before_script:
     - curl -sL https://taskfile.dev/install.sh | sh
     - ./bin/task --version
+    - mv ./bin/task /usr/local/bin/
   script:
     - go mod tidy
     - task format
