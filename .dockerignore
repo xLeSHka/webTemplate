@@ -52,7 +52,6 @@ server
 *.gcda
 
 # Documentation
-docs/
 README.md
 LICENSE
 CONTRIBUTING.md
