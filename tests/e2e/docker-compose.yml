@@ -1,8 +1,20 @@
 services:
+  runner:
+    image: ghcr.io/astral-sh/uv:alpine
+    volumes:
+      - ./.:/app
+    working_dir: /app
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: no
+    command: >
+      sh -c "
+        uv sync &&
+        uv run pytest -n auto --maxfail=1 --exitfirst
+      "
+
   database:
-    container_name: database
-    ports:
-      - "127.0.0.1:5432:5432"
     env_file:
       - test.env
     image: postgres:18.0-alpine3.22
@@ -18,11 +30,15 @@ services:
     build:
       context: ../../.
       target: final
-    ports:
-      - "127.0.0.1:8080:8080"
     env_file:
       - test.env
     depends_on:
       database:
         condition: service_healthy
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8080/api/ping" ]
+      interval: 5s
+      timeout: 10s
+      retries: 10
+      start_period: 15s
     restart: unless-stopped

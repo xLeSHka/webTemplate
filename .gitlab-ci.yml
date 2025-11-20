@@ -22,9 +22,9 @@ codegen-test-lint:
     - mv ./bin/task /usr/local/bin/
   script:
     - go mod tidy
-    - task format
-    - task mockery:gen
-    - task swag
+    # - task format
+    # - task mockery:gen
+    # - task swag
     - task lint
     - task test
   rules:
