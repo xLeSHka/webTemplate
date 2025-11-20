@@ -20,6 +20,8 @@ vars:
   COVERAGE_DIR: '{{.ROOT_DIR}}/coverage'
   COVERAGE_FILE: total.out
 
+  MODULES: .
+
 tasks:
   install-formatters:
     desc: "Installs gci and gofumpt formatters in ./bin"
@@ -117,50 +119,57 @@ tasks:
         exit $ERR
 
   test-coverage:
-    desc: "Тесты с покрытием бизнес-логики (service/repository) для модуля backend"
+    desc: "Tests with business logic coverage (service/repository)"
     cmds:
       - |
-        echo "🧪 Запускаем расчёт покрытия..."
+        echo "🧪 Starting coverage calc..."
         rm -rf {{.COVERAGE_DIR}}
         mkdir -p {{.COVERAGE_DIR}}
         
-        MOD="backend"
-        echo "📦 Обрабатываем модуль: $MOD"
-        
         TARGET_PKGS=$(go list ./... \
           | grep -E '/(internal/(service|repository))' \
-          | grep -vE '/(mocks|testdata|pkg|api|cmd)' \
-          | paste -sd "," -)
+          | grep -vE '/(mocks|testdata|pkg|api|proto|pb|cmd)')
         
         if [ -z "$TARGET_PKGS" ]; then
-          echo "⚠️  Нет подходящих пакетов"
+          echo "⚠️  No targeted packages"
           exit 1
         fi
         
-        TEST_PKGS=$(echo "$TARGET_PKGS" | tr "," "\n" | while read pkg; do
-          if go list -f '{{if .TestGoFiles}}{{.ImportPath}}{{end}}' "$pkg" 2>/dev/null | grep -q .; then
-            echo "$pkg"
-          fi
-        done | paste -sd " " -)
+        TARGET_PKGS_CSV=$(echo "$TARGET_PKGS" | paste -sd "," -)
         
-        if [ -z "$TEST_PKGS" ]; then
-          echo "⚠️  Нет пакетов с тестами"
-          exit 1
-        fi
-        
+        echo "📦 Running tests for packages with test files..."
         ERR=0
-        go test -coverpkg="$TARGET_PKGS" \
-          -coverprofile={{.COVERAGE_DIR}}/{{.COVERAGE_FILE}} \
-          -covermode=atomic \
-          $TEST_PKGS || ERR=1
+        IDX=0
+        echo "$TARGET_PKGS" | while read pkg; do
+          if go list -f '{{`{{if .TestGoFiles}}{{.ImportPath}}{{end}}`}}' "$pkg" 2>/dev/null | grep -q .; then
+            IDX=$((IDX + 1))
+            echo " • Testing: $pkg"
+            go test -count=1 -coverpkg="$TARGET_PKGS_CSV" \
+              -coverprofile={{.COVERAGE_DIR}}/pkg_${IDX}.out \
+              -covermode=atomic \
+              "$pkg" || ERR=1
+          fi
+        done
         
         if [ $ERR -ne 0 ]; then
-          echo "❌ Ошибки во время тестов"
+          echo "❌ Errors in tests"
           exit $ERR
         fi
         
         echo
-        echo "📊 Покрытие модуля $MOD:"
+        echo "📦 Merging coverage files..."
+        FIRST=1
+        for f in {{.COVERAGE_DIR}}/pkg_*.out; do
+          if [ $FIRST -eq 1 ]; then
+            cat "$f" > {{.COVERAGE_DIR}}/{{.COVERAGE_FILE}}
+            FIRST=0
+          else
+            grep -v "^mode:" "$f" >> {{.COVERAGE_DIR}}/{{.COVERAGE_FILE}}
+          fi
+        done
+        
+        echo
+        echo "🧾 Total coverage:"
         go tool cover -func={{.COVERAGE_DIR}}/{{.COVERAGE_FILE}} | tail -n1
   
 
