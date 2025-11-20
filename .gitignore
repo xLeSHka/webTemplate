@@ -25,7 +25,8 @@
 go.work
 .logs
 .idea
-dev.env
+!tests/e2e/test.env
+*.env
 .DS_Store
 *.iml
 
