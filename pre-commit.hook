@@ -1,0 +1,32 @@
+#!/bin/sh
+
+echo "🎨
+ Formatting code..."
+
+if ! task format; then
+    echo "❌
+ Formatting failed."
+    exit 1
+fi
+
+echo "🔍
+ Running linters..."
+
+if ! task lint; then
+    echo "❌
+ Linting failed. Please fix the issues before committing."
+    exit 1
+fi
+
+echo "🧪
+ Running tests..."
+
+if ! task test; then
+    echo "❌
+ Tests failed. Please fix the issues before committing."
+    exit 1
+fi
+
+echo "✅
+ Format, linters, and tests passed"
+exit 0
