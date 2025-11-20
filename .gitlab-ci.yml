@@ -1,14 +1,13 @@
 stages:
   - codegen-test-lint
-  - build
-  - e2e
-  - push
+  - build-e2e-push
 
 variables:
   DOCKER_TLS_CERTDIR: "/certs"
   DOCKER_HOST: "tcp://docker:2376"
   DOCKER_CERT_PATH: "/certs/client"
   DOCKER_TLS_VERIFY: "1"
+  DOCKER_BUILDKIT: "1"
   REGISTRY: $CI_REGISTRY
   IMAGE_NAME: "$CI_PROJECT_PATH"
   TAG: $CI_COMMIT_REF_NAME
@@ -37,14 +36,15 @@ codegen-test-lint:
         - "README.md"
       when: never
 
-build:
+build-e2e-push:
   dependencies:
     - codegen-test-lint
-  stage: build
+  stage: build-e2e-push
   image: docker:27
   services:
     - docker:27-dind
   before_script:
+    - apk add --no-cache bash
     - until docker info; do sleep 1; done
     - echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
   script:
@@ -58,49 +58,11 @@ build:
       -t ${REGISTRY}/${IMAGE_NAME}:${TAG}
       -t ${REGISTRY}/${IMAGE_NAME}:${CACHE_TAG}
       .
-  rules:
-    - changes:
-        - "**/*"
-      when: on_success
-    - changes:
-        - "compose.yml"
-        - "README.md"
-      when: never
 
-e2e:
-  dependencies:
-    - build
-  stage: e2e
-  image: docker:27
-  services:
-    - docker:27-dind
-  before_script:
-    - until docker info; do sleep 1; done
-    - echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
-    - docker pull ${REGISTRY}/${IMAGE_NAME}:${TAG}
-    - docker tag ${REGISTRY}/${IMAGE_NAME}:${TAG} ${CI_PROJECT_NAME}:latest
-  script:
+    # Run e2e tests
     - cd tests/e2e && ./run.sh
-  rules:
-    - changes:
-        - "**/*"
-      when: on_success
-    - changes:
-        - "compose.yml"
-        - "README.md"
-      when: never
 
-push:
-  dependencies:
-    - e2e
-  image: docker:27
-  stage: push
-  services:
-    - docker:27-dind
-  before_script:
-    - until docker info; do sleep 1; done
-    - echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
-  script:
+    # Push image if tests were completed
     - docker push ${REGISTRY}/${IMAGE_NAME}:${TAG}
   rules:
     - changes:
