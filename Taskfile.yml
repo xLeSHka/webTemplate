@@ -137,11 +137,22 @@ tasks:
           exit 1
         fi
         
+        TEST_PKGS=$(echo "$TARGET_PKGS" | tr "," "\n" | while read pkg; do
+          if go list -f '{{if .TestGoFiles}}{{.ImportPath}}{{end}}' "$pkg" 2>/dev/null | grep -q .; then
+            echo "$pkg"
+          fi
+        done | paste -sd " " -)
+        
+        if [ -z "$TEST_PKGS" ]; then
+          echo "⚠️  Нет пакетов с тестами"
+          exit 1
+        fi
+        
         ERR=0
         go test -coverpkg="$TARGET_PKGS" \
           -coverprofile={{.COVERAGE_DIR}}/{{.COVERAGE_FILE}} \
           -covermode=atomic \
-          $(echo "$TARGET_PKGS" | tr "," " ") || ERR=1
+          $TEST_PKGS || ERR=1
         
         if [ $ERR -ne 0 ]; then
           echo "❌ Ошибки во время тестов"
