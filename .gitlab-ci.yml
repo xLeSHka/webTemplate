@@ -58,10 +58,6 @@ build:
       -t ${REGISTRY}/${IMAGE_NAME}:${TAG}
       -t ${REGISTRY}/${IMAGE_NAME}:${CACHE_TAG}
       .
-  artifacts:
-    paths:
-      - .docker_image_built
-    expire_in: 1 hour
   rules:
     - changes:
         - "**/*"
