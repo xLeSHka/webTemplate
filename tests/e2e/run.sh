@@ -10,4 +10,4 @@ trap cleanup EXIT
 
 # start backend
 echo "Running tests..."
-docker compose up -d --build --exit-code-from runner --abort-on-container-exit
+docker compose up --build --exit-code-from runner --abort-on-container-exit
