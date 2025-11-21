@@ -1,6 +1,7 @@
 package main
 
 import (
+	"backend/internal/repository"
 	userRepo "backend/internal/repository/user"
 
 	"go.uber.org/fx"
@@ -46,7 +47,10 @@ func main() {
 			// services and infra
 
 			infra.NewPostgresConnection,
-			userRepo.New,
+			fx.Annotate(
+				userRepo.New,
+				fx.As(new(repository.UserRepository)),
+			),
 
 			user.NewService,
 			auth.NewService,
