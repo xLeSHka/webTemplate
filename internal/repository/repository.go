@@ -1,13 +1,12 @@
 package repository
 
 import (
+	"backend/internal/infra/queries"
 	"context"
-
-	"backend/internal/model"
 )
 
 type UserRepository interface {
-	Create(ctx context.Context, user model.User) error
-	GetUserByEmail(ctx context.Context, email string) (model.User, error)
-	GetUserByID(ctx context.Context, id string) (model.User, error)
+	Create(ctx context.Context, user queries.User) error
+	GetUserByID(ctx context.Context, id string) (queries.User, error)
+	GetUserByEmail(ctx context.Context, email string) (queries.User, error)
 }

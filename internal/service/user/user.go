@@ -1,12 +1,11 @@
 package user
 
 import (
+	"backend/internal/infra/queries"
 	"context"
 
 	"github.com/alexedwards/argon2id"
 	"github.com/oklog/ulid/v2"
-
-	"backend/internal/model"
 )
 
 func (s *Service) Create(ctx context.Context, email, password string) (string, error) {
@@ -17,7 +16,7 @@ func (s *Service) Create(ctx context.Context, email, password string) (string, e
 		return "", err
 	}
 
-	if err = s.repository.Create(ctx, model.User{
+	if err = s.repository.Create(ctx, queries.User{
 		ID:           id,
 		Email:        email,
 		PasswordHash: passwordHash,
@@ -28,10 +27,10 @@ func (s *Service) Create(ctx context.Context, email, password string) (string, e
 	return id, nil
 }
 
-func (s *Service) GetByID(ctx context.Context, id string) (model.User, error) {
+func (s *Service) GetByID(ctx context.Context, id string) (queries.User, error) {
 	return s.repository.GetUserByID(ctx, id)
 }
 
-func (s *Service) GetByEmail(ctx context.Context, email string) (model.User, error) {
+func (s *Service) GetByEmail(ctx context.Context, email string) (queries.User, error) {
 	return s.repository.GetUserByEmail(ctx, email)
 }

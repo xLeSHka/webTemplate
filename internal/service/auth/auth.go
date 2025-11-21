@@ -1,13 +1,13 @@
 package auth
 
 import (
+	"backend/internal/infra/queries"
 	"strings"
 	"time"
 
 	"github.com/alexedwards/argon2id"
 	"github.com/golang-jwt/jwt/v5"
 
-	"backend/internal/model"
 	"backend/pkg/utils"
 )
 
@@ -46,7 +46,7 @@ func (s *Service) VerifyToken(authHeader string) (string, error) {
 	return userID, nil
 }
 
-func (s *Service) VerifyPassword(user model.User, password string) error {
+func (s *Service) VerifyPassword(user queries.User, password string) error {
 	valid, err := argon2id.ComparePasswordAndHash(password, user.PasswordHash)
 	if err != nil {
 		return err

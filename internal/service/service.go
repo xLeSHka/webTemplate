@@ -1,9 +1,8 @@
 package service
 
 import (
+	"backend/internal/infra/queries"
 	"context"
-
-	"backend/internal/model"
 )
 
 // AuthService defines auth service interface
@@ -11,7 +10,7 @@ import (
 type AuthService interface {
 	VerifyToken(authHeader string) (string, error)
 
-	VerifyPassword(user model.User, password string) error
+	VerifyPassword(user queries.User, password string) error
 
 	GenerateToken(userID string) (string, error)
 }
@@ -21,7 +20,7 @@ type AuthService interface {
 type UserService interface {
 	Create(ctx context.Context, email, password string) (string, error)
 
-	GetByID(ctx context.Context, id string) (model.User, error)
+	GetByID(ctx context.Context, id string) (queries.User, error)
 
-	GetByEmail(ctx context.Context, email string) (model.User, error)
+	GetByEmail(ctx context.Context, email string) (queries.User, error)
 }

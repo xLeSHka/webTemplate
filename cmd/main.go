@@ -1,11 +1,13 @@
 package main
 
 import (
+	userRepo "backend/internal/repository/user"
+
 	"go.uber.org/fx"
+	"go.uber.org/fx/fxevent"
+	"go.uber.org/zap"
 
 	"backend/internal/infra"
-	"backend/internal/repository"
-	userRepo "backend/internal/repository/user"
 	"backend/internal/service/auth"
 	"backend/internal/service/user"
 	"backend/internal/transport/api/handlers"
@@ -23,8 +25,18 @@ import (
 func main() {
 	// TODO: log db requests
 	// TODO: add otel
+	cfg, err := infra.NewConfig()
+	if err != nil {
+		panic(err)
+	}
+	logger, err := infra.NewLogger(cfg)
+	if err != nil {
 
+		panic(err)
+	}
 	fx.New(
+		fx.Supply(logger.Zap, logger, cfg),
+
 		fx.Provide(
 			// REST API
 			infra.NewEcho,
@@ -32,21 +44,19 @@ func main() {
 			handlers.NewAuth,
 
 			// services and infra
-			infra.NewLogger,
-			infra.NewConfig,
+
 			infra.NewPostgresConnection,
-			fx.Annotate(
-				userRepo.NewRepository,
-				fx.As(new(repository.UserRepository)),
-			),
+			userRepo.New,
+
 			user.NewService,
 			auth.NewService,
 		),
-		/*
-			fx.WithLogger(func(lc fx.Lifecycle, logger *infra.Logger) fxevent.Logger {
-				return &infra.ZapFxLogger{Logger: logger.Zap}
-			}),
-		*/
+
+		fx.WithLogger(func(log *zap.Logger) fxevent.Logger {
+			defer logger.Zap.Sync()
+			return &fxevent.ZapLogger{Logger: logger.Zap}
+		}),
+
 		fx.Invoke(func(auth *handlers.Auth) {
 			// need each of controllers, to register them
 
