@@ -6,7 +6,6 @@ package repository
 
 import (
 	"backend/internal/infra/queries"
-	"backend/internal/model"
 	"context"
 
 	mock "github.com/stretchr/testify/mock"
